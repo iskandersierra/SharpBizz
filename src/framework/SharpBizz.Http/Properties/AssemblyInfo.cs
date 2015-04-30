@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SharpBizz.WebApi")]
+[assembly: AssemblyTitle("SharpBizz.Http")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SharpBizz.WebApi")]
+[assembly: AssemblyProduct("SharpBizz.Http")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("f123287b-79a1-4d5d-9e8a-59a1c649e9d0")]
+[assembly: Guid("2e84a8ef-c9db-45a4-b41f-4b65e2276d6a")]
 
 // Version information for an assembly consists of the following four values:
 //
