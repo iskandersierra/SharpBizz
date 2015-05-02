@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpBizz.Http", "framework
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "framework", "framework", "{520FBA57-CBB6-492C-A6E1-76255092F32E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpBizz.Http.Tests", "framework\SharpBizz.Http.Tests\SharpBizz.Http.Tests.csproj", "{5E8D4B52-FA0F-49EA-A0EE-A6D1F535A6EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,11 +19,16 @@ Global
 		{73DB2F88-A202-49BC-AF9D-A47B7B969CC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73DB2F88-A202-49BC-AF9D-A47B7B969CC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73DB2F88-A202-49BC-AF9D-A47B7B969CC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E8D4B52-FA0F-49EA-A0EE-A6D1F535A6EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E8D4B52-FA0F-49EA-A0EE-A6D1F535A6EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E8D4B52-FA0F-49EA-A0EE-A6D1F535A6EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E8D4B52-FA0F-49EA-A0EE-A6D1F535A6EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{73DB2F88-A202-49BC-AF9D-A47B7B969CC3} = {520FBA57-CBB6-492C-A6E1-76255092F32E}
+		{5E8D4B52-FA0F-49EA-A0EE-A6D1F535A6EE} = {520FBA57-CBB6-492C-A6E1-76255092F32E}
 	EndGlobalSection
 EndGlobal
