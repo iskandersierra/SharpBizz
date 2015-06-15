@@ -46,11 +46,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HttpUtils_ReadRequestAsync.cs" />
+    <Compile Include="HttpUtils_ReadRequestAsyncSteps.cs" />
     <Compile Include="HttpUtils_ReadRequestAsync.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>HttpUtils_ReadRequestAsync.feature</DependentUpon>
+    </Compile>
+    <Compile Include="HttpUtils_ReadResponseAsyncSteps.cs" />
+    <Compile Include="HttpUtils_ReadResponseAsync.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HttpUtils_ReadResponseAsync.feature</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -59,6 +65,10 @@
     <None Include="HttpUtils_ReadRequestAsync.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>HttpUtils_ReadRequestAsync.feature.cs</LastGenOutput>
+    </None>
+    <None Include="HttpUtils_ReadResponseAsync.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>HttpUtils_ReadResponseAsync.feature.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
   </ItemGroup>

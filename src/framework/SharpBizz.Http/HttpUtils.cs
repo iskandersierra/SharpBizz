@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,36 +16,35 @@ namespace SharpBizz.Http
 {
     public static class HttpUtils
     {
-        public static Task WriteAsync(this HttpRequestMessage request, Stream stream)
+        public static Task WriteRequestAsync(this HttpRequestMessage request, Stream stream)
         {
             return Task.Factory.StartNew(() =>
             {
 
             });
         }
-        public static async Task<byte[]> WriteAsync(this HttpRequestMessage request)
+        public static async Task<byte[]> WriteRequestAsync(this HttpRequestMessage request)
         {
-            await WriteAsync(request, Stream.Null);
+            await WriteRequestAsync(request, Stream.Null);
             return null;
         }
 
-        public static Task WriteAsync(this HttpResponseMessage response, Stream stream)
+        public static Task WriteResponseAsync(this HttpResponseMessage response, Stream stream)
         {
             return Task.Factory.StartNew(() =>
             {
 
             });
         }
-        public static async Task<byte[]> WriteAsync(this HttpResponseMessage response)
+        public static async Task<byte[]> WriteResponseAsync(this HttpResponseMessage response)
         {
-            await WriteAsync(response, Stream.Null);
+            await WriteResponseAsync(response, Stream.Null);
             return null;
         }
 
         public static async Task<HttpRequestMessage> ReadRequestAsync(Stream stream)
         {
-            var message = new HttpRequestMessage();
-            var handler = new HttpRequestParserDelegate(message);
+            var handler = new HttpRequestParserDelegate();
             var parser = new HttpParser(handler);
 
             const int bufferSize = 8 * 1024;
@@ -68,23 +68,46 @@ namespace SharpBizz.Http
                 throw new AggregateException(exceptions);
             }
 
-            return message;
+            return handler.Request;
         }
         public static Task<HttpRequestMessage> ReadRequestAsync(byte[] data)
         {
+            if (data == null) throw new ArgumentNullException("data");
             return ReadRequestAsync(new MemoryStream(data));
         }
 
-        public static Task<HttpResponseMessage> ReadResponseAsync(Stream stream)
+        public static async Task<HttpResponseMessage> ReadResponseAsync(Stream stream)
         {
-            return Task.Factory.StartNew(() =>
+            var handler = new HttpResponseParserDelegate();
+            var parser = new HttpParser(handler);
+
+            const int bufferSize = 8 * 1024;
+            var buffer = new byte[bufferSize];
+            int readCount;
+
+            do
             {
-                return default(HttpResponseMessage);
-            });
+                readCount = await stream.ReadAsync(buffer, 0, bufferSize);
+                if (readCount <= 0)
+                    break;
+                var segment = new ArraySegment<byte>(buffer, 0, readCount);
+                parser.Execute(segment);
+            } while (readCount > 0 && !handler.HasErrors);
+
+            if (handler.HasErrors)
+            {
+                var exceptions = handler.Errors.Select(e => new FormatException(e)).ToArray<Exception>();
+                if (exceptions.Length == 1)
+                    throw exceptions[0];
+                throw new AggregateException(exceptions);
+            }
+
+            return handler.Response;
         }
         public static Task<HttpResponseMessage> ReadResponseAsync(byte[] data)
         {
-            return ReadResponseAsync(Stream.Null);
+            if (data == null) throw new ArgumentNullException("data");
+            return ReadResponseAsync(new MemoryStream(data));
         }
 
         public static DateTimeOffset? ParseHttpDate(string httpDate)
@@ -96,7 +119,8 @@ namespace SharpBizz.Http
         {
             private List<string> _errors;
             private IReadOnlyCollection<string> _roerrors;
-            private static readonly Dictionary<string, Action<string, string, HttpContentHeaders>> KnownContentHeaders;
+            private static readonly HashSet<string> KnownContentHeaderKeys;
+            private static readonly List<string> KnownContentHeaderPrefixes;
             private string _currentHeaderName;
             private Stream _tempStream;
             private StreamContent _tempContent;
@@ -164,19 +188,32 @@ namespace SharpBizz.Http
                     Content = _tempContent;
             }
 
-            private void ProcessHeader(HttpParser parser, string name, string value)
+            protected virtual void ProcessHeader(HttpParser parser, string name, string value)
             {
-                if (KnownContentHeaders.ContainsKey(name))
+                if (KnownContentHeaderKeys.Contains(name))
                 {
-                    var func = KnownContentHeaders[name];
-                    func(name, value, ContentHeaders);
-                    return;
+                    ProcessHeader(parser, ContentHeaders, name, value);
                 }
-
-                OnProcessHeader(parser, name, value);
+                else if (KnownContentHeaderPrefixes.Any(prefix => name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                {
+                    ProcessHeader(parser, ContentHeaders, name, value);
+                }
+                else
+                {
+                    ProcessHeader(parser, SpecificHeaders, name, value);
+                }
             }
 
-            protected abstract void OnProcessHeader(HttpParser parser, string name, string value);
+            private void ProcessHeader(HttpParser parser, HttpHeaders headers, string name, string value)
+            {
+                IEnumerable<string> values;
+                var newValues = new[] { value };
+                if (headers.TryGetValues(name, out values))
+                    values = values.Concat(newValues);
+                else
+                    values = newValues;
+                headers.Add(name, values);
+            }
 
             public HttpContentHeaders ContentHeaders
             {
@@ -188,94 +225,52 @@ namespace SharpBizz.Http
                 }
             }
 
+            public abstract HttpHeaders SpecificHeaders { get; }
+
             public abstract HttpContent Content { get; set; }
             public abstract Version Version { get; set; }
 
             static HttpParserDelegate()
             {
-                KnownContentHeaders = new Dictionary<string, Action<string, string, HttpContentHeaders>>(
-                    StringComparer.OrdinalIgnoreCase)
+                KnownContentHeaderKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    {"Allow", SetupAllowHeader},
-                    {"Content-Disposition", SetupContentDispositionHeader},
-                    {"Content-Encoding", SetupContentEncodingHeader},
-                    {"Content-Language", SetupContentLanguageHeader},
-                    {"Content-Length", SetupContentLengthHeader},
-                    {"Content-Location", SetupContentLocationHeader},
-                    {"Content-MD5", SetupContentMD5Header},
-                    {"Content-Range", SetupContentRangeHeader},
-                    {"Content-Type", SetupContentTypeHeader},
-                    {"Expires", SetupExpiresHeader},
-                    {"Last-Modified", SetupLastModifiedHeader},
+                    "Allow", 
+                    "Content-Disposition", 
+                    "Content-Encoding", 
+                    "Content-Language", 
+                    "Content-Length", 
+                    "Content-Location", 
+                    "Content-MD5", 
+                    "Content-Range", 
+                    "Content-Type", 
+                    "Expires", 
+                    "Last-Modified", 
+                };
+                KnownContentHeaderPrefixes = new List<string>()
+                {
+                    "Content-",
+                    "X-Content-",
                 };
             }
-
-            private static void SetupAllowHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.Allow.Add(value);
-            }
-
-            private static void SetupContentDispositionHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.ContentDisposition = new ContentDispositionHeaderValue(value);
-            }
-
-            private static void SetupContentEncodingHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.ContentEncoding.Add(value);
-            }
-
-            private static void SetupContentLanguageHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.ContentLanguage.Add(value);
-            }
-
-            private static void SetupContentLengthHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.Add("Content-Length", value);
-            }
-
-            private static void SetupContentLocationHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.ContentLocation = new Uri(value, UriKind.RelativeOrAbsolute);
-            }
-
-            private static void SetupContentMD5Header(string name, string value, HttpContentHeaders headers)
-            {
-                headers.ContentMD5 = Convert.FromBase64String(value);
-            }
-
-            private static void SetupContentRangeHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.ContentRange = ContentRangeHeaderValue.Parse(value);
-            }
-
-            private static void SetupContentTypeHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.ContentType = MediaTypeHeaderValue.Parse(value);
-            }
-
-            private static void SetupExpiresHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.Expires = ParseHttpDate(value);
-            }
-
-            private static void SetupLastModifiedHeader(string name, string value, HttpContentHeaders headers)
-            {
-                headers.LastModified = ParseHttpDate(value);
-            }
-
         }
 
         private class HttpRequestParserDelegate : HttpParserDelegate, IHttpRequestParserDelegate
         {
             private readonly HttpRequestMessage _request;
-            private static readonly Dictionary<string, Action<string, string, HttpRequestHeaders>> KnownRequestHeaders;
+
+            public HttpRequestParserDelegate() : this(new HttpRequestMessage())
+            {
+            }
 
             public HttpRequestParserDelegate(HttpRequestMessage request)
             {
                 if (request == null) throw new ArgumentNullException("request");
                 _request = request;
+            }
+
+            public HttpRequestMessage Request
+            {
+                get { return _request; }
             }
 
             public void OnMethod(HttpParser parser, string method)
@@ -300,24 +295,9 @@ namespace SharpBizz.Http
             {
             }
 
-            protected override void OnProcessHeader(HttpParser parser, string name, string value)
+            public override HttpHeaders SpecificHeaders
             {
-                if (KnownRequestHeaders.ContainsKey(name))
-                {
-                    var func = KnownRequestHeaders[name];
-                    func(name, value, _request.Headers);
-                    return;
-                }
-
-                if (name.StartsWith("Content-", StringComparison.OrdinalIgnoreCase) ||
-                    name.StartsWith("X-Content-", StringComparison.OrdinalIgnoreCase))
-                {
-                    ContentHeaders.Add(name, value);
-                }
-                else
-                {
-                    _request.Headers.Add(name, value);
-                }
+                get { return _request.Headers; }
             }
 
             public override HttpContent Content
@@ -345,158 +325,12 @@ namespace SharpBizz.Http
                         {"PUT", HttpMethod.Put},
                         {"TRACE", HttpMethod.Trace},
                     });
-
-                KnownRequestHeaders = new Dictionary<string, Action<string, string, HttpRequestHeaders>>(
-                    StringComparer.OrdinalIgnoreCase)
-                {
-                    {"Accept", SetupAcceptHeader},
-                    {"Accept-Charset", SetupAcceptCharsetHeader},
-                    {"Accept-Encoding", SetupAcceptEncodingHeader},
-                    {"Accept-Language", SetupAcceptLanguageHeader},
-                    {"Authorization", SetupAuthorizationHeader},
-                    {"Cache-Control", SetupCacheControlHeader},
-                    {"Connection", SetupConnectionHeader},
-                    {"Date", SetupDateHeader},
-                    {"Expect", SetupExpectHeader},
-                    {"From", SetupFromHeader},
-                    {"Host", SetupHostHeader},
-                    {"If-Match", SetupIfMatchHeader},
-                    {"If-Modified-Since", SetupIfModifiedSinceHeader},
-                    {"If-None-Match", SetupIfNoneMatchHeader},
-                    {"If-Range", SetupIfRangeHeader},
-                    {"If-Unmodified-Since", SetupIfUnmodifiedSinceHeader},
-                    {"Max-Forwards", SetupMaxForwardsHeader},
-                    {"Pragma", SetupPragmaHeader},
-                    {"Proxy-Authorization", SetupProxyAuthorizationHeader},
-                    {"Range", SetupRangeHeader},
-                    {"Referer", SetupReferrerHeader},
-                    {"TE", SetupTEHeader},
-                    {"Trailer", SetupTrailerHeader},
-                    {"Transfer-Encoding", SetupTransferEncodingHeader},
-                    {"Upgrade", SetupUpgradeHeader},
-                    {"User-Agent", SetupUserAgentHeader},
-                    {"Via", SetupViaHeader},
-                    {"Warning", SetupWarningHeader},
-                };
             }
 
             private static readonly ConcurrentDictionary<string, HttpMethod> HttpMethodCache = new ConcurrentDictionary<string, HttpMethod>();
             private static HttpMethod GetHttpMethod(string method)
             {
                 return HttpMethodCache.GetOrAdd(method, m => new HttpMethod(m));
-            }
-
-            private static void SetupAcceptHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Accept.ParseAdd(value);
-            }
-            private static void SetupAcceptCharsetHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.AcceptCharset.ParseAdd(value);
-            }
-            private static void SetupAcceptEncodingHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.AcceptEncoding.ParseAdd(value);
-            }
-            private static void SetupAcceptLanguageHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.AcceptLanguage.ParseAdd(value);
-            }
-            private static void SetupAuthorizationHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Authorization = AuthenticationHeaderValue.Parse(value);
-            }
-            private static void SetupCacheControlHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.CacheControl = CacheControlHeaderValue.Parse(value);
-            }
-            private static void SetupConnectionHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Connection.ParseAdd(value);
-            }
-            private static void SetupDateHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Date = ParseHttpDate(value);
-            }
-            private static void SetupExpectHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Expect.ParseAdd(value);
-            }
-            private static void SetupFromHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.From = value;
-            }
-            private static void SetupHostHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Host = value;
-            }
-            private static void SetupIfMatchHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.IfMatch.ParseAdd(value);
-            }
-            private static void SetupIfModifiedSinceHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.IfModifiedSince = ParseHttpDate(value);
-            }
-            private static void SetupIfNoneMatchHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.IfNoneMatch.ParseAdd(value);
-            }
-            private static void SetupIfRangeHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.IfRange = RangeConditionHeaderValue.Parse(value);
-            }
-            private static void SetupIfUnmodifiedSinceHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.IfUnmodifiedSince = ParseHttpDate(value);
-            }
-            private static void SetupMaxForwardsHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.MaxForwards = int.Parse(value);
-            }
-            private static void SetupPragmaHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Pragma.ParseAdd(value);
-            }
-            private static void SetupProxyAuthorizationHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.ProxyAuthorization = AuthenticationHeaderValue.Parse(value);
-            }
-            private static void SetupRangeHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Range = RangeHeaderValue.Parse(value);
-            }
-            private static void SetupReferrerHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Referrer = new Uri(value, UriKind.RelativeOrAbsolute);
-            }
-            private static void SetupTEHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.TE.ParseAdd(value);
-            }
-            private static void SetupTrailerHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Trailer.ParseAdd(value);
-            }
-            private static void SetupTransferEncodingHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.TransferEncoding.ParseAdd(value);
-            }
-            private static void SetupUpgradeHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Upgrade.ParseAdd(value);
-            }
-            private static void SetupUserAgentHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.UserAgent.ParseAdd(value);
-            }
-            private static void SetupViaHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Via.ParseAdd(value);
-            }
-            private static void SetupWarningHeader(string name, string value, HttpRequestHeaders headers)
-            {
-                headers.Warning.ParseAdd(value);
             }
         }
 
@@ -505,19 +339,30 @@ namespace SharpBizz.Http
             private readonly HttpResponseMessage _response;
             private static readonly Dictionary<string, Action<string, string, HttpResponseHeaders>> KnownResponseHeaders;
 
+            public HttpResponseParserDelegate() : this(new HttpResponseMessage())
+            {
+            }
+
             public HttpResponseParserDelegate(HttpResponseMessage response)
             {
                 if (response == null) throw new ArgumentNullException("response");
                 _response = response;
             }
 
-            public void OnResponseCode(HttpParser parser, int statusCode, string statusReason)
+            public HttpResponseMessage Response
             {
+                get { return _response; }
             }
 
-            protected override void OnProcessHeader(HttpParser parser, string name, string value)
+            public void OnResponseCode(HttpParser parser, int statusCode, string statusReason)
             {
-                throw new NotImplementedException();
+                _response.StatusCode = (HttpStatusCode) statusCode;
+                _response.ReasonPhrase = statusReason.Trim();
+            }
+
+            public override HttpHeaders SpecificHeaders
+            {
+                get { return _response.Headers; }
             }
 
             public override HttpContent Content
@@ -530,70 +375,6 @@ namespace SharpBizz.Http
             {
                 get { return _response.Version; }
                 set { _response.Version = value; }
-            }
-
-            static HttpResponseParserDelegate()
-            {
-                KnownResponseHeaders = new Dictionary<string, Action<string, string, HttpResponseHeaders>>(
-                    StringComparer.OrdinalIgnoreCase)
-                {
-                    {"Accept-Ranges", SetupAcceptRangesHeader},
-                    {"Age", SetupAgeHeader},
-                    {"Cache-Control", SetupCacheControlHeader},
-                    {"Connection", SetupConnectionHeader},
-                    {"Date", SetupDateHeader},
-                    {"Pragma", SetupPragmaHeader},
-                    {"Trailer", SetupTrailerHeader},
-                    {"Transfer-Encoding", SetupTransferEncodingHeader},
-                    {"Upgrade", SetupUpgradeHeader},
-                    {"Via", SetupViaHeader},
-                    {"Warning", SetupWarningHeader},
-                };
-            }
-
-            private static void SetupAcceptRangesHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.AcceptRanges.ParseAdd(value);
-            }
-            private static void SetupAgeHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Age = TimeSpan.FromSeconds(int.Parse(value));
-            }
-            private static void SetupCacheControlHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.CacheControl = CacheControlHeaderValue.Parse(value);
-            }
-            private static void SetupConnectionHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Connection.ParseAdd(value);
-            }
-            private static void SetupDateHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Date = ParseHttpDate(value);
-            }
-            private static void SetupPragmaHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Pragma.ParseAdd(value);
-            }
-            private static void SetupTrailerHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Trailer.ParseAdd(value);
-            }
-            private static void SetupTransferEncodingHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.TransferEncoding.ParseAdd(value);
-            }
-            private static void SetupUpgradeHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Upgrade.ParseAdd(value);
-            }
-            private static void SetupViaHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Via.ParseAdd(value);
-            }
-            private static void SetupWarningHeader(string name, string value, HttpResponseHeaders headers)
-            {
-                headers.Warning.ParseAdd(value);
             }
         }
     }
