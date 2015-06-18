@@ -116,6 +116,136 @@ this.ScenarioSetup(scenarioInfo);
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a simple response message with one single-valued content header and no conte" +
+            "nt")]
+        [NUnit.Framework.TestCaseAttribute("Content-Disposition", "attachment; filename=\"fname.ext\"", null)]
+        [NUnit.Framework.TestCaseAttribute("Content-Location", "/index.htm", null)]
+        [NUnit.Framework.TestCaseAttribute("Content-MD5", "Q2hlY2sgSW50ZWdyaXR5IQ==", null)]
+        [NUnit.Framework.TestCaseAttribute("Content-Range", "bytes 21010-47021/47022", null)]
+        [NUnit.Framework.TestCaseAttribute("Content-Type", "text/html; charset=utf-8", null)]
+        [NUnit.Framework.TestCaseAttribute("Expires", "Thu, 01 Dec 1994 16:00:00 GMT", null)]
+        [NUnit.Framework.TestCaseAttribute("Last-Modified", "Tue, 15 Nov 1994 12:45:26 GMT", null)]
+        public virtual void ReadASimpleResponseMessageWithOneSingle_ValuedContentHeaderAndNoContent(string header, string value, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple response message with one single-valued content header and no conte" +
+                    "nt", exampleTags);
+#line 33
+this.ScenarioSetup(scenarioInfo);
+#line 34
+ testRunner.Given(string.Format("A simple HTTP response is recieved with \"{0}\" with value \"{1}\"", header, value), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 35
+ testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 36
+ testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 37
+ testRunner.And("The response content headers count is 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 38
+ testRunner.And("The response headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 39
+ testRunner.And(string.Format("The response content header \"{0}\" has value \"{1}\"", header, value), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a simple response message with one multi-valued content header and no conten" +
+            "t")]
+        [NUnit.Framework.TestCaseAttribute("Allow", "GET, HEAD, OPTIONS", "3", null)]
+        [NUnit.Framework.TestCaseAttribute("Content-Encoding", "gzip, lzha", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("Content-Language", "da, en-US, pt-PT, es-ES", "4", null)]
+        public virtual void ReadASimpleResponseMessageWithOneMulti_ValuedContentHeaderAndNoContent(string header, string values, string count, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple response message with one multi-valued content header and no conten" +
+                    "t", exampleTags);
+#line 50
+this.ScenarioSetup(scenarioInfo);
+#line 51
+ testRunner.Given(string.Format("A simple HTTP response is recieved with \"{0}\" with value \"{1}\"", header, values), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 52
+ testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 53
+ testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 54
+ testRunner.And("The response content headers count is 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 55
+ testRunner.And("The response headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 56
+ testRunner.And(string.Format("The response content header \"{0}\" has values \"{1}\" with {2} elements", header, values, count), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a simple response message with one single-valued response header and no cont" +
+            "ent")]
+        [NUnit.Framework.TestCaseAttribute("Access-Control-Allow-Origin", "*", null)]
+        [NUnit.Framework.TestCaseAttribute("Accept-Patch", "text/example;charset=utf-8", null)]
+        [NUnit.Framework.TestCaseAttribute("Accept-Ranges", "bytes", null)]
+        [NUnit.Framework.TestCaseAttribute("Age", "12", null)]
+        [NUnit.Framework.TestCaseAttribute("Connection", "close", null)]
+        [NUnit.Framework.TestCaseAttribute("Cache-Control", "max-age=3600", null)]
+        [NUnit.Framework.TestCaseAttribute("Date", "Tue, 15 Nov 1994 08:12:31 GMT", null)]
+        [NUnit.Framework.TestCaseAttribute("ETag", "\"737060cd8c284d8af7ad3082f209582d\"", null)]
+        [NUnit.Framework.TestCaseAttribute("Link", "</feed>; rel=\"alternate\"", null)]
+        [NUnit.Framework.TestCaseAttribute("Location", "http://www.w3.org/pub/WWW/People.html", null)]
+        [NUnit.Framework.TestCaseAttribute("P3P", "CP=\"This is not a P3P policy! See http://www.google.com/support/accounts/bin/answ" +
+            "er.py?hl=en&answer=151657 for more info.\"", null)]
+        [NUnit.Framework.TestCaseAttribute("Pragma", "no-cache", null)]
+        [NUnit.Framework.TestCaseAttribute("Proxy-Authenticate", "Basic", null)]
+        [NUnit.Framework.TestCaseAttribute("Public-Key-Pins", "max-age=2592000; pin-sha256=\"E9CZ9INDbd+2eRQozYqqbQ2yXLVKB9+xcprMF+44U1g=\";", null)]
+        [NUnit.Framework.TestCaseAttribute("Refresh", "5; url=http://www.w3.org/pub/WWW/People.html", null)]
+        [NUnit.Framework.TestCaseAttribute("Retry-After", "120", null)]
+        [NUnit.Framework.TestCaseAttribute("Retry-After", "Fri, 07 Nov 2014 23:59:59 GMT", null)]
+        [NUnit.Framework.TestCaseAttribute("Set-Cookie", "UserID=JohnDoe; Max-Age=3600; Version=1", null)]
+        [NUnit.Framework.TestCaseAttribute("Strict-Transport-Security", "max-age=16070400; includeSubDomains", null)]
+        [NUnit.Framework.TestCaseAttribute("Trailer", "Max-Forwards", null)]
+        [NUnit.Framework.TestCaseAttribute("Transfer-Encoding", "gzip", null)]
+        public virtual void ReadASimpleResponseMessageWithOneSingle_ValuedResponseHeaderAndNoContent(string header, string value, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple response message with one single-valued response header and no cont" +
+                    "ent", exampleTags);
+#line 63
+this.ScenarioSetup(scenarioInfo);
+#line 64
+ testRunner.Given(string.Format("A simple HTTP response is recieved with \"{0}\" with value \"{1}\"", header, value), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 65
+ testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 66
+ testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 67
+ testRunner.And("The response content headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 68
+ testRunner.And("The response headers count is 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 69
+ testRunner.And(string.Format("The response header \"{0}\" has value \"{1}\"", header, value), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a simple response message with one multi-valued header and no content")]
+        [NUnit.Framework.TestCaseAttribute("Server", "Apache/2.4.1 (Unix)", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("TE", "chunked, compress, deflate, gzip, identity", "1", null)]
+        public virtual void ReadASimpleResponseMessageWithOneMulti_ValuedHeaderAndNoContent(string header, string values, string count, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple response message with one multi-valued header and no content", exampleTags);
+#line 94
+this.ScenarioSetup(scenarioInfo);
+#line 95
+ testRunner.Given(string.Format("A simple HTTP response is recieved with \"{0}\" with value \"{1}\"", header, values), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 96
+ testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 97
+ testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 98
+ testRunner.And("The response content headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 99
+ testRunner.And("The response headers count is 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

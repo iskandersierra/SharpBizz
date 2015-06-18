@@ -95,10 +95,28 @@ Scenario Outline: Read a simple request message with one single-valued request h
 	And The request headers count is 1
 	And The request header "<header>" has value "<value>"
 	Examples:
-	| header          | value                              |
-	| Accept-Datetime | Thu, 31 May 2007 20:35:00 GMT      |
-	| Authorization   | Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ== |
-	| Cache-Control   | no-cache                           |
+	| header              | value                                  |
+	| Accept-Datetime     | Thu, 31 May 2007 20:35:00 GMT          |
+	| Authorization       | Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==     |
+	| Cache-Control       | no-cache                               |
+	| Connection          | keep-alive                             |
+	| Cookie              | $Version=1; Skin=new;                  |
+	| Date                | Tue, 15 Nov 1994 08:12:31 GMT          |
+	| Expect              | 100-continue                           |
+	| From                | user@example.com                       |
+	| Host                | www.example.com:80                     |
+	| If-Match            | "737060cd8c284d8af7ad3082f209582d"     |
+	| If-Modified-Since   | Tue, 15 Nov 1994 08:12:31 GMT          |
+	| If-None-Match       | "737060cd8c284d8af7ad3082f209582d"     |
+	| If-Range            | "737060cd8c284d8af7ad3082f209582d"     |
+	| If-Unmodified-Since | Tue, 15 Nov 1994 08:12:31 GMT          |
+	| Max-Forwards        | 10                                     |
+	| Origin              | http://www.example-social-network.com  |
+	| Pragma              | no-cache                               |
+	| Proxy-Authorization | Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==     |
+	| Range               | bytes=500-999                          |
+	| Referer             | http://en.wikipedia.org/wiki/Main_Page |
+
 
 Scenario Outline: Read a simple request message with one multi-valued header and no content
 	Given A simple HTTP GET request is recieved with "<header>" with value "<values>"
@@ -108,8 +126,14 @@ Scenario Outline: Read a simple request message with one multi-valued header and
 	And The request headers count is 1
 	And The request header "<header>" has values "<values>" with <count> elements
 	Examples:
-	| header          | values                        | count |
-	| Accept          | text/plain, text/html         | 2     |
-	| Accept-Charset  | utf-8, utf-16, utf-32         | 3     |
-	| Accept-Encoding | gzip, deflate                 | 2     |
-	| Accept-Language | en-US, es-ES, pt-PT           | 3     |
+	| header          | values                                                               | count |
+	| Accept          | text/plain, text/html                                                | 2     |
+	| Accept-Charset  | utf-8, utf-16, utf-32                                                | 3     |
+	| Accept-Encoding | gzip, deflate                                                        | 2     |
+	| Accept-Language | en-US, es-ES, pt-PT                                                  | 3     |
+	| TE              | trailers, deflate                                                    | 2     |
+	| Upgrade         | HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11                                | 4     |
+	| Via             | 1.0 fred, 1.1 example.com (Apache/1.1)                               | 2     |
+
+
+

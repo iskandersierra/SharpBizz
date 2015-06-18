@@ -237,6 +237,23 @@ this.ScenarioSetup(scenarioInfo);
         [NUnit.Framework.TestCaseAttribute("Accept-Datetime", "Thu, 31 May 2007 20:35:00 GMT", null)]
         [NUnit.Framework.TestCaseAttribute("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==", null)]
         [NUnit.Framework.TestCaseAttribute("Cache-Control", "no-cache", null)]
+        [NUnit.Framework.TestCaseAttribute("Connection", "keep-alive", null)]
+        [NUnit.Framework.TestCaseAttribute("Cookie", "$Version=1; Skin=new;", null)]
+        [NUnit.Framework.TestCaseAttribute("Date", "Tue, 15 Nov 1994 08:12:31 GMT", null)]
+        [NUnit.Framework.TestCaseAttribute("Expect", "100-continue", null)]
+        [NUnit.Framework.TestCaseAttribute("From", "user@example.com", null)]
+        [NUnit.Framework.TestCaseAttribute("Host", "www.example.com:80", null)]
+        [NUnit.Framework.TestCaseAttribute("If-Match", "\"737060cd8c284d8af7ad3082f209582d\"", null)]
+        [NUnit.Framework.TestCaseAttribute("If-Modified-Since", "Tue, 15 Nov 1994 08:12:31 GMT", null)]
+        [NUnit.Framework.TestCaseAttribute("If-None-Match", "\"737060cd8c284d8af7ad3082f209582d\"", null)]
+        [NUnit.Framework.TestCaseAttribute("If-Range", "\"737060cd8c284d8af7ad3082f209582d\"", null)]
+        [NUnit.Framework.TestCaseAttribute("If-Unmodified-Since", "Tue, 15 Nov 1994 08:12:31 GMT", null)]
+        [NUnit.Framework.TestCaseAttribute("Max-Forwards", "10", null)]
+        [NUnit.Framework.TestCaseAttribute("Origin", "http://www.example-social-network.com", null)]
+        [NUnit.Framework.TestCaseAttribute("Pragma", "no-cache", null)]
+        [NUnit.Framework.TestCaseAttribute("Proxy-Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==", null)]
+        [NUnit.Framework.TestCaseAttribute("Range", "bytes=500-999", null)]
+        [NUnit.Framework.TestCaseAttribute("Referer", "http://en.wikipedia.org/wiki/Main_Page", null)]
         public virtual void ReadASimpleRequestMessageWithOneSingle_ValuedRequestHeaderAndNoContent(string header, string value, string[] exampleTags)
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple request message with one single-valued request header and no conten" +
@@ -265,22 +282,25 @@ this.ScenarioSetup(scenarioInfo);
         [NUnit.Framework.TestCaseAttribute("Accept-Charset", "utf-8, utf-16, utf-32", "3", null)]
         [NUnit.Framework.TestCaseAttribute("Accept-Encoding", "gzip, deflate", "2", null)]
         [NUnit.Framework.TestCaseAttribute("Accept-Language", "en-US, es-ES, pt-PT", "3", null)]
+        [NUnit.Framework.TestCaseAttribute("TE", "trailers, deflate", "2", null)]
+        [NUnit.Framework.TestCaseAttribute("Upgrade", "HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11", "4", null)]
+        [NUnit.Framework.TestCaseAttribute("Via", "1.0 fred, 1.1 example.com (Apache/1.1)", "2", null)]
         public virtual void ReadASimpleRequestMessageWithOneMulti_ValuedHeaderAndNoContent(string header, string values, string count, string[] exampleTags)
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple request message with one multi-valued header and no content", exampleTags);
-#line 103
+#line 121
 this.ScenarioSetup(scenarioInfo);
-#line 104
+#line 122
  testRunner.Given(string.Format("A simple HTTP GET request is recieved with \"{0}\" with value \"{1}\"", header, values), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 105
+#line 123
  testRunner.When("The message is parsed as a HttpRequestMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 106
+#line 124
  testRunner.Then("The request is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line 107
+#line 125
  testRunner.And("The request content headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 108
+#line 126
  testRunner.And("The request headers count is 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 109
+#line 127
  testRunner.And(string.Format("The request header \"{0}\" has values \"{1}\" with {2} elements", header, values, count), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
