@@ -1,13 +1,12 @@
 ﻿@httpSerialization
-Feature: HttpUtils_ReadResponseAsync
-	Create a HttpResponseMessage from a binary serialized Http response message
+Feature: HttpUtils_WriteResponseAsync
+	Create a binary serialized version of a given HttpResponseMessage
 
-Scenario Outline: Read a simple response message
-	Given A simple HTTP response is recieved with "<status>", "<reason>" and HTTP version 1 and 1
-	When  The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And   The response status code is "<status>"
-	And   The response reason phrase is "<reason>"
+Scenario Outline: Write a simple response message
+	Given A simple HTTP response is created with <status>, "<reason>" and HTTP version 1 and 1
+	When  The response message is written to a stream
+	Then  The stream is not empty
+	And   The string representation of the stream is a simple response message with <status>, "<reason>" and HTTP version 1 and 1
 	Examples:
 	| status | reason                |
 	| 100    | Continue              |
@@ -17,11 +16,11 @@ Scenario Outline: Read a simple response message
 	| 404    | Not Found             |
 	| 500    | Internal Server Error |
 
-Scenario Outline: Read a simple response message with different HTTP versions
-	Given A simple HTTP response is recieved with "200", "OK" and HTTP version <major> and <minor>
-	When  The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And   The response version is <major> and <minor>
+Scenario Outline: Write a simple response message with different HTTP versions
+	Given A simple HTTP response is created with 200, "OK" and HTTP version <major> and <minor>
+	When  The response message is written to a stream
+	Then  The stream is not empty
+	And   The string representation of the stream is a simple response message with 200, "OK" and HTTP version <major> and <minor>
 	Examples:
 	| major | minor |
 	| 1     | 1     |
@@ -30,43 +29,29 @@ Scenario Outline: Read a simple response message with different HTTP versions
 	| 2     | 0     |
 	| 0     | 9     |
 
-Scenario Outline: Read a simple response message with one single-valued content header and no content
-	Given A simple HTTP response is recieved with "<header>" with value "<value>"
-	When The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And The response content headers count is 1
-	And The response headers count is 0
-	And The response content header "<header>" has value "<value>"
+
+Scenario Outline: Write a simple response message with one content header and no content
+	Given A simple response is created with content "<header>" with value "<value>" and empty string content
+	When  The response message is written to a stream
+	Then  The stream is not empty
+	And The string representation of the stream is a simple response with "<header>" with value "<value>" and plain text content type
 	Examples:
 	| header              | value                            |
 	| Content-Disposition | attachment; filename="fname.ext" |
 	| Content-Location    | /index.htm                       |
 	| Content-MD5         | Q2hlY2sgSW50ZWdyaXR5IQ==         |
 	| Content-Range       | bytes 21010-47021/47022          |
-	| Content-Type        | text/html; charset=utf-8         |
-	| Expires			  | Thu, 01 Dec 1994 16:00:00 GMT    |
-	| Last-Modified  	  | Tue, 15 Nov 1994 12:45:26 GMT    |
+	| Expires             | Thu, 01 Dec 1994 16:00:00 GMT    |
+	| Last-Modified       | Tue, 15 Nov 1994 12:45:26 GMT    |
+	| Allow               | GET, HEAD, OPTIONS               |
+	| Content-Encoding    | gzip, lzha                       |
+	| Content-Language    | da, en-US, pt-PT, es-ES          |
 
-Scenario Outline: Read a simple response message with one multi-valued content header and no content
-	Given A simple HTTP response is recieved with "<header>" with value "<values>"
-	When The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And The response content headers count is 1
-	And The response headers count is 0
-	And The response content header "<header>" has values "<values>" with <count> elements
-	Examples:
-	| header           | values                  | count |
-	| Allow            | GET, HEAD, OPTIONS      | 3     |
-	| Content-Encoding | gzip, lzha              | 2     |
-	| Content-Language | da, en-US, pt-PT, es-ES | 4     |
-
-Scenario Outline: Read a simple response message with one single-valued response header and no content
-	Given A simple HTTP response is recieved with "<header>" with value "<value>"
-	When The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And The response content headers count is 0
-	And The response headers count is 1
-	And The response header "<header>" has value "<value>"
+Scenario Outline: Write a simple response message with one response header and no content
+	Given A simple response is created with response "<header>" with value "<value>"
+	When  The response message is written to a stream
+	Then  The stream is not empty
+	And The string representation of the stream is a simple response with "<header>" with value "<value>"
 	Examples:
 	| header                      | value                                                                                                                      |
 	| Access-Control-Allow-Origin | *                                                                                                                          |
@@ -91,39 +76,4 @@ Scenario Outline: Read a simple response message with one single-valued response
 	| Trailer                     | Max-Forwards                                                                                                               |
 	| Transfer-Encoding           | gzip                                                                                                                       |
 	| TE                          | chunked, compress, deflate, gzip, identity                                                                                 |
-
-Scenario Outline: Read a simple response message with one multi-valued header and no content
-	Given A simple HTTP response is recieved with "<header>" with value "<values>"
-	When The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And The response content headers count is 0
-	And The response headers count is 1
-	And The response header "<header>" has values "<values>" with <count> elements of type <valuesType>
-	Examples:
-	| header | values                                     | count | valuesType      |
-	| Server | Apache/2.4.1 (Unix)                        | 2     | ProductComments |
-
-Scenario Outline: Read a response message with single-line plain text content
-	Given A HTTP response is recieved with single-line plain text "<content>"
-	When  The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And The response content headers count is 2
-	And The response headers count is 0
-	And The response content length matches "<content>" length
-	Examples:
-	| content        |
-	| Hello world!!! |
-
-Scenario Outline: Read a response message with binary content
-	Given A HTTP POST response is recieved with byte values up to <count> bytes
-	When  The message is parsed as a HttpResponseMessage
-	Then  The response is not null
-	And The response content headers count is 2
-	And The response headers count is 0
-	And The response content length is "<count>"
-	Examples:
-	| count |
-	| 0     |
-	| 1     |
-	| 10    |
-	| 100   |
+	| Server                      | Apache/2.4.1 (Unix)                                                                                                        |

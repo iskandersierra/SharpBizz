@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using HttpMachine;
@@ -16,34 +17,67 @@ namespace SharpBizz.Http
 {
     public static class HttpUtils
     {
-        public static Task WriteRequestAsync(this HttpRequestMessage request, Stream stream)
+        private static readonly Encoding Ascii = Encoding.ASCII;
+        private static readonly HashSet<string> SpaceSeparatedHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            return Task.Factory.StartNew(() =>
-            {
+            "User-Agent",
+            "Server",
+        };
 
-            });
+        public static async Task WriteRequestAsync(this HttpRequestMessage request, Stream stream)
+        {
+            if (request == null) throw new ArgumentNullException("request");
+            if (stream == null) throw new ArgumentNullException("stream");
+
+            // Write first line
+            await WriteAsciiAsync(stream, string.Format(@"{0} {1} HTTP/{2}.{3}
+", request.Method.Method, Uri.EscapeUriString(request.RequestUri.ToString()), request.Version.Major, request.Version.Minor));
+
+            // Write headers
+            await WriteHeadersAsync(stream, request.Headers, request.Content);
+
+            // Write content
+            await WriteContentAsync(stream, request.Content);
         }
+
         public static async Task<byte[]> WriteRequestAsync(this HttpRequestMessage request)
         {
-            await WriteRequestAsync(request, Stream.Null);
-            return null;
+            if (request == null) throw new ArgumentNullException("request");
+            var memStream = new MemoryStream();
+            await WriteRequestAsync(request, memStream);
+            var arr = memStream.ToArray();
+            return arr;
         }
 
-        public static Task WriteResponseAsync(this HttpResponseMessage response, Stream stream)
+        public static async Task WriteResponseAsync(this HttpResponseMessage response, Stream stream)
         {
-            return Task.Factory.StartNew(() =>
-            {
+            if (response == null) throw new ArgumentNullException("response");
+            if (stream == null) throw new ArgumentNullException("stream");
 
-            });
+            // Write first line
+            await WriteAsciiAsync(stream, string.Format(@"HTTP/{2}.{3} {0} {1}
+", (int)response.StatusCode, response.ReasonPhrase, response.Version.Major, response.Version.Minor));
+
+            // Write headers
+            await WriteHeadersAsync(stream, response.Headers, response.Content);
+
+            // Write content
+            await WriteContentAsync(stream, response.Content);
         }
+
         public static async Task<byte[]> WriteResponseAsync(this HttpResponseMessage response)
         {
-            await WriteResponseAsync(response, Stream.Null);
-            return null;
+            if (response == null) throw new ArgumentNullException("response");
+            var memStream = new MemoryStream();
+            await WriteResponseAsync(response, memStream);
+            var arr = memStream.ToArray();
+            return arr;
         }
+
 
         public static async Task<HttpRequestMessage> ReadRequestAsync(Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException("stream");
             var handler = new HttpRequestParserDelegate();
             var parser = new HttpParser(handler);
 
@@ -78,6 +112,7 @@ namespace SharpBizz.Http
 
         public static async Task<HttpResponseMessage> ReadResponseAsync(Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException("stream");
             var handler = new HttpResponseParserDelegate();
             var parser = new HttpParser(handler);
 
@@ -112,7 +147,55 @@ namespace SharpBizz.Http
 
         public static DateTimeOffset? ParseHttpDate(string httpDate)
         {
+            if (httpDate == null) throw new ArgumentNullException("httpDate");
             return DateTimeOffset.Parse(httpDate); // "r"
+        }
+
+        private static string GetHeaderValue(string header, IEnumerable<string> values)
+        {
+            var sb = new StringBuilder();
+            var first = true;
+            var separator = ", ";
+            if (SpaceSeparatedHeaders.Contains(header))
+                separator = " ";
+            foreach (var value in values)
+            {
+                if (!first) sb.Append(separator);
+                sb.Append(value);
+                first = false;
+            }
+            return sb.ToString();
+        }
+
+        private static async Task WriteAsciiAsync(Stream stream, string text)
+        {
+            // This can be optimized
+            var buffer = Ascii.GetBytes(text);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
+        }
+
+        private static async Task WriteHeadersAsync(Stream stream, HttpHeaders messageHeaders, HttpContent content)
+        {
+            var headers = messageHeaders.AsEnumerable();
+            if (content != null)
+                headers = headers.Concat(content.Headers);
+
+            foreach (var header in headers.OrderBy(h => h.Key))
+            {
+                await WriteAsciiAsync(stream, string.Format(@"{0}: {1}
+", header.Key, GetHeaderValue(header.Key, header.Value)));
+            }
+
+            await WriteAsciiAsync(stream, @"
+");
+        }
+
+        private static async Task WriteContentAsync(Stream stream, HttpContent content)
+        {
+            if (content != null)
+            {
+                await content.CopyToAsync(stream);
+            }
         }
 
         private abstract class HttpParserDelegate : IHttpParserDelegate

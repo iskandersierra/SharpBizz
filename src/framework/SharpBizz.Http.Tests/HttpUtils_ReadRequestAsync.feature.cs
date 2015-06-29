@@ -278,14 +278,15 @@ this.ScenarioSetup(scenarioInfo);
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Read a simple request message with one multi-valued header and no content")]
-        [NUnit.Framework.TestCaseAttribute("Accept", "text/plain, text/html", "2", null)]
-        [NUnit.Framework.TestCaseAttribute("Accept-Charset", "utf-8, utf-16, utf-32", "3", null)]
-        [NUnit.Framework.TestCaseAttribute("Accept-Encoding", "gzip, deflate", "2", null)]
-        [NUnit.Framework.TestCaseAttribute("Accept-Language", "en-US, es-ES, pt-PT", "3", null)]
-        [NUnit.Framework.TestCaseAttribute("TE", "trailers, deflate", "2", null)]
-        [NUnit.Framework.TestCaseAttribute("Upgrade", "HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11", "4", null)]
-        [NUnit.Framework.TestCaseAttribute("Via", "1.0 fred, 1.1 example.com (Apache/1.1)", "2", null)]
-        public virtual void ReadASimpleRequestMessageWithOneMulti_ValuedHeaderAndNoContent(string header, string values, string count, string[] exampleTags)
+        [NUnit.Framework.TestCaseAttribute("Accept", "text/plain, text/html", "2", "CommaSeparated", null)]
+        [NUnit.Framework.TestCaseAttribute("Accept-Charset", "utf-8, utf-16, utf-32", "3", "CommaSeparated", null)]
+        [NUnit.Framework.TestCaseAttribute("Accept-Encoding", "gzip, deflate", "2", "CommaSeparated", null)]
+        [NUnit.Framework.TestCaseAttribute("Accept-Language", "en-US, es-ES, pt-PT", "3", "CommaSeparated", null)]
+        [NUnit.Framework.TestCaseAttribute("TE", "trailers, deflate", "2", "CommaSeparated", null)]
+        [NUnit.Framework.TestCaseAttribute("Upgrade", "HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11", "4", "CommaSeparated", null)]
+        [NUnit.Framework.TestCaseAttribute("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/21.0", "4", "ProductComments", null)]
+        [NUnit.Framework.TestCaseAttribute("Via", "1.0 fred, 1.1 example.com (Apache/1.1)", "2", "CommaSeparated", null)]
+        public virtual void ReadASimpleRequestMessageWithOneMulti_ValuedHeaderAndNoContent(string header, string values, string count, string valuesType, string[] exampleTags)
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple request message with one multi-valued header and no content", exampleTags);
 #line 121
@@ -301,7 +302,58 @@ this.ScenarioSetup(scenarioInfo);
 #line 126
  testRunner.And("The request headers count is 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 127
- testRunner.And(string.Format("The request header \"{0}\" has values \"{1}\" with {2} elements", header, values, count), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.And(string.Format("The request header \"{0}\" has values \"{1}\" with {2} elements of type {3}", header, values, count, valuesType), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a request message with single-line plain text content")]
+        [NUnit.Framework.TestCaseAttribute("Hello world!!!", null)]
+        public virtual void ReadARequestMessageWithSingle_LinePlainTextContent(string content, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a request message with single-line plain text content", exampleTags);
+#line 139
+this.ScenarioSetup(scenarioInfo);
+#line 140
+ testRunner.Given(string.Format("A HTTP POST request is recieved with single-line plain text \"{0}\"", content), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 141
+ testRunner.When("The message is parsed as a HttpRequestMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 142
+ testRunner.Then("The request is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 143
+ testRunner.And("The request content headers count is 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 144
+ testRunner.And("The request headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 145
+ testRunner.And(string.Format("The request content length matches \"{0}\" length", content), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a request message with binary content")]
+        [NUnit.Framework.TestCaseAttribute("0", null)]
+        [NUnit.Framework.TestCaseAttribute("1", null)]
+        [NUnit.Framework.TestCaseAttribute("10", null)]
+        [NUnit.Framework.TestCaseAttribute("100", null)]
+        public virtual void ReadARequestMessageWithBinaryContent(string count, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a request message with binary content", exampleTags);
+#line 150
+this.ScenarioSetup(scenarioInfo);
+#line 151
+ testRunner.Given(string.Format("A HTTP POST request is recieved with byte values up to {0} bytes", count), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 152
+ testRunner.When("The message is parsed as a HttpRequestMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 153
+ testRunner.Then("The request is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 154
+ testRunner.And("The request content headers count is 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 155
+ testRunner.And("The request headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 156
+ testRunner.And(string.Format("The request content length is \"{0}\"", count), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }

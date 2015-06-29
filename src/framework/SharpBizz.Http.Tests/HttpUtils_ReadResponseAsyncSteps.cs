@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -19,7 +20,7 @@ namespace SharpBizz.Http.Tests
             var httpMessage = string.Format(@"HTTP/{2}.{3} {0} {1} 
 
 ", status, reason, major, minor);
-            var asciiMessage = Encoding.GetEncoding("ISO-8859-1").GetBytes(httpMessage);
+            var asciiMessage = TestUtils.HttpEncoding.GetBytes(httpMessage);
             ScenarioContext.Current.Set(asciiMessage, "binary message");
         }
 
@@ -30,7 +31,36 @@ namespace SharpBizz.Http.Tests
 {0}: {1}
 
 ", header, value);
-            var asciiMessage = Encoding.GetEncoding("ISO-8859-1").GetBytes(httpMessage);
+            var asciiMessage = TestUtils.HttpEncoding.GetBytes(httpMessage);
+            ScenarioContext.Current.Set(asciiMessage, "binary message");
+        }
+
+        [Given(@"A HTTP response is recieved with single-line plain text ""(.*)""")]
+        public void GivenAHTTPResponseIsRecievedWithSingle_LinePlainText(string content)
+        {
+            var httpMessage = string.Format(@"HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+Content-Length: {1}
+
+{0}", content, content.Length);
+            var asciiMessage = TestUtils.HttpEncoding.GetBytes(httpMessage);
+            ScenarioContext.Current.Set(asciiMessage, "binary message");
+        }
+
+        [Given(@"A HTTP POST response is recieved with byte values up to (.*) bytes")]
+        public void GivenAHTTPPOSTResponseIsRecievedWithByteValuesUpToBytes(int count)
+        {
+            var memstr = new MemoryStream();
+            var httpMessage = string.Format(@"HTTP/1.1 200 OK
+Content-Type: application/octet-stream
+Content-Length: {0}
+
+", count);
+            var buffer = TestUtils.HttpEncoding.GetBytes(httpMessage);
+            memstr.Write(buffer, 0, buffer.Length);
+            for (byte i = 1; i <= count; i++)
+                memstr.WriteByte(i);
+            var asciiMessage = memstr.ToArray();
             ScenarioContext.Current.Set(asciiMessage, "binary message");
         }
 
@@ -133,8 +163,8 @@ namespace SharpBizz.Http.Tests
             Assert.That(values, Is.EquivalentTo(value.Split(',').Select(s => s.Trim())));
         }
 
-        [Then(@"The response header ""(.*)"" has values ""(.*)"" with (.*) elements")]
-        public void ThenTheResponseHeaderHasValuesWithElements(string header, string value, int valuesCount)
+        [Then(@"The response header ""(.*)"" has values ""(.*)"" with (.*) elements of type (.*)")]
+        public void ThenTheResponseHeaderHasValuesWithElementsOfType(string header, string value, int valuesCount, ValuesTypeEnum valuesType)
         {
             var response = ScenarioContext.Current.Get<HttpResponseMessage>();
             IEnumerable<string> values;
@@ -142,8 +172,34 @@ namespace SharpBizz.Http.Tests
             Assert.That(found, Is.True);
             Assert.That(values, Is.Not.Null);
             Assert.That(values.Count(), Is.EqualTo(valuesCount));
-            Assert.That(values, Is.EquivalentTo(value.Split(',').Select(s => s.Trim())));
+            var separatedValues = TestUtils.SeparateValues(value, valuesType);
+            Assert.That(values, Is.EquivalentTo(separatedValues));
         }
 
+        [Then(@"The response content length is ""(.*)""")]
+        public void ThenTheResponseContentLengthIs(int count)
+        {
+            var request = ScenarioContext.Current.Get<HttpResponseMessage>();
+            if (request.Content != null)
+            {
+                Assert.That(request.Content.Headers.ContentLength, Is.EqualTo(count));
+                Assert.That(TestUtils.GetStreamLength(request.Content.ReadAsStreamAsync().Result), Is.EqualTo(count));
+            }
+            else
+                Assert.That(count, Is.EqualTo(0));
+        }
+
+        [Then(@"The response content length matches ""(.*)"" length")]
+        public void ThenTheResponseContentLengthMatchesLength(string content)
+        {
+            var request = ScenarioContext.Current.Get<HttpResponseMessage>();
+            if (request.Content != null)
+            {
+                Assert.That(request.Content.Headers.ContentLength, Is.EqualTo(content.Length));
+                Assert.That(TestUtils.GetStreamLength(request.Content.ReadAsStreamAsync().Result), Is.EqualTo(content.Length));
+            }
+            else
+                Assert.That(content.Length, Is.EqualTo(0));
+        }
     }
 }

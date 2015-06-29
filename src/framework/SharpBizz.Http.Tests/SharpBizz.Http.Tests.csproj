@@ -58,7 +58,20 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>HttpUtils_ReadResponseAsync.feature</DependentUpon>
     </Compile>
+    <Compile Include="HttpUtils_WriteRequestAsyncSteps.cs" />
+    <Compile Include="HttpUtils_WriteRequestAsync.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HttpUtils_WriteRequestAsync.feature</DependentUpon>
+    </Compile>
+    <Compile Include="HttpUtils_WriteResponseAsync.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HttpUtils_WriteResponseAsync.feature</DependentUpon>
+    </Compile>
+    <Compile Include="HttpUtils_WriteResponseAsyncSteps.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -69,6 +82,14 @@
     <None Include="HttpUtils_ReadResponseAsync.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>HttpUtils_ReadResponseAsync.feature.cs</LastGenOutput>
+    </None>
+    <None Include="HttpUtils_WriteRequestAsync.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>HttpUtils_WriteRequestAsync.feature.cs</LastGenOutput>
+    </None>
+    <None Include="HttpUtils_WriteResponseAsync.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>HttpUtils_WriteResponseAsync.feature.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
   </ItemGroup>

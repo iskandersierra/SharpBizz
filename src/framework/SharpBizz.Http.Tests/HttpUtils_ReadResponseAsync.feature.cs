@@ -202,6 +202,7 @@ this.ScenarioSetup(scenarioInfo);
         [NUnit.Framework.TestCaseAttribute("Strict-Transport-Security", "max-age=16070400; includeSubDomains", null)]
         [NUnit.Framework.TestCaseAttribute("Trailer", "Max-Forwards", null)]
         [NUnit.Framework.TestCaseAttribute("Transfer-Encoding", "gzip", null)]
+        [NUnit.Framework.TestCaseAttribute("TE", "chunked, compress, deflate, gzip, identity", null)]
         public virtual void ReadASimpleResponseMessageWithOneSingle_ValuedResponseHeaderAndNoContent(string header, string value, string[] exampleTags)
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple response message with one single-valued response header and no cont" +
@@ -226,23 +227,75 @@ this.ScenarioSetup(scenarioInfo);
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Read a simple response message with one multi-valued header and no content")]
-        [NUnit.Framework.TestCaseAttribute("Server", "Apache/2.4.1 (Unix)", "2", null)]
-        [NUnit.Framework.TestCaseAttribute("TE", "chunked, compress, deflate, gzip, identity", "1", null)]
-        public virtual void ReadASimpleResponseMessageWithOneMulti_ValuedHeaderAndNoContent(string header, string values, string count, string[] exampleTags)
+        [NUnit.Framework.TestCaseAttribute("Server", "Apache/2.4.1 (Unix)", "2", "ProductComments", null)]
+        public virtual void ReadASimpleResponseMessageWithOneMulti_ValuedHeaderAndNoContent(string header, string values, string count, string valuesType, string[] exampleTags)
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a simple response message with one multi-valued header and no content", exampleTags);
-#line 94
-this.ScenarioSetup(scenarioInfo);
 #line 95
- testRunner.Given(string.Format("A simple HTTP response is recieved with \"{0}\" with value \"{1}\"", header, values), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+this.ScenarioSetup(scenarioInfo);
 #line 96
- testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.Given(string.Format("A simple HTTP response is recieved with \"{0}\" with value \"{1}\"", header, values), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 97
- testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 98
- testRunner.And("The response content headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 99
+ testRunner.And("The response content headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 100
  testRunner.And("The response headers count is 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 101
+ testRunner.And(string.Format("The response header \"{0}\" has values \"{1}\" with {2} elements of type {3}", header, values, count, valuesType), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a response message with single-line plain text content")]
+        [NUnit.Framework.TestCaseAttribute("Hello world!!!", null)]
+        public virtual void ReadAResponseMessageWithSingle_LinePlainTextContent(string content, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a response message with single-line plain text content", exampleTags);
+#line 106
+this.ScenarioSetup(scenarioInfo);
+#line 107
+ testRunner.Given(string.Format("A HTTP response is recieved with single-line plain text \"{0}\"", content), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 108
+ testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 109
+ testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 110
+ testRunner.And("The response content headers count is 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 111
+ testRunner.And("The response headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 112
+ testRunner.And(string.Format("The response content length matches \"{0}\" length", content), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Read a response message with binary content")]
+        [NUnit.Framework.TestCaseAttribute("0", null)]
+        [NUnit.Framework.TestCaseAttribute("1", null)]
+        [NUnit.Framework.TestCaseAttribute("10", null)]
+        [NUnit.Framework.TestCaseAttribute("100", null)]
+        public virtual void ReadAResponseMessageWithBinaryContent(string count, string[] exampleTags)
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Read a response message with binary content", exampleTags);
+#line 117
+this.ScenarioSetup(scenarioInfo);
+#line 118
+ testRunner.Given(string.Format("A HTTP POST response is recieved with byte values up to {0} bytes", count), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 119
+ testRunner.When("The message is parsed as a HttpResponseMessage", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 120
+ testRunner.Then("The response is not null", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 121
+ testRunner.And("The response content headers count is 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 122
+ testRunner.And("The response headers count is 0", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 123
+ testRunner.And(string.Format("The response content length is \"{0}\"", count), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
