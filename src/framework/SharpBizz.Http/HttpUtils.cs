@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Policy;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HttpMachine;
 
@@ -24,58 +25,83 @@ namespace SharpBizz.Http
             "Server",
         };
 
-        public static async Task WriteRequestAsync(this HttpRequestMessage request, Stream stream)
+        public static Task WriteRequestAsync(this HttpRequestMessage request, Stream stream)
+        {
+            return WriteRequestAsync(request, stream, CancellationToken.None);
+        }
+
+        public static async Task WriteRequestAsync(this HttpRequestMessage request, Stream stream, CancellationToken cancellationToken)
         {
             if (request == null) throw new ArgumentNullException("request");
             if (stream == null) throw new ArgumentNullException("stream");
 
             // Write first line
             await WriteAsciiAsync(stream, string.Format(@"{0} {1} HTTP/{2}.{3}
-", request.Method.Method, Uri.EscapeUriString(request.RequestUri.ToString()), request.Version.Major, request.Version.Minor));
+", request.Method.Method, Uri.EscapeUriString(request.RequestUri.ToString()), request.Version.Major, request.Version.Minor), cancellationToken);
 
             // Write headers
-            await WriteHeadersAsync(stream, request.Headers, request.Content);
+            await WriteHeadersAsync(stream, request.Headers, request.Content, cancellationToken);
 
             // Write content
-            await WriteContentAsync(stream, request.Content);
+            await WriteContentAsync(stream, request.Content, cancellationToken);
         }
 
-        public static async Task<byte[]> WriteRequestAsync(this HttpRequestMessage request)
+        public static Task<byte[]> WriteRequestAsync(this HttpRequestMessage request)
+        {
+            return WriteRequestAsync(request, CancellationToken.None);
+        }
+
+        public static async Task<byte[]> WriteRequestAsync(this HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (request == null) throw new ArgumentNullException("request");
             var memStream = new MemoryStream();
-            await WriteRequestAsync(request, memStream);
+            await WriteRequestAsync(request, memStream, cancellationToken);
             var arr = memStream.ToArray();
             return arr;
         }
 
-        public static async Task WriteResponseAsync(this HttpResponseMessage response, Stream stream)
+        public static Task WriteResponseAsync(this HttpResponseMessage response, Stream stream)
+        {
+            return WriteResponseAsync(response, stream, CancellationToken.None);
+        }
+
+        public static async Task WriteResponseAsync(this HttpResponseMessage response, Stream stream, CancellationToken cancellationToken)
         {
             if (response == null) throw new ArgumentNullException("response");
             if (stream == null) throw new ArgumentNullException("stream");
 
             // Write first line
             await WriteAsciiAsync(stream, string.Format(@"HTTP/{2}.{3} {0} {1}
-", (int)response.StatusCode, response.ReasonPhrase, response.Version.Major, response.Version.Minor));
+", (int)response.StatusCode, response.ReasonPhrase, response.Version.Major, response.Version.Minor), cancellationToken);
 
             // Write headers
-            await WriteHeadersAsync(stream, response.Headers, response.Content);
+            await WriteHeadersAsync(stream, response.Headers, response.Content, cancellationToken);
 
             // Write content
-            await WriteContentAsync(stream, response.Content);
+            await WriteContentAsync(stream, response.Content, cancellationToken);
         }
 
-        public static async Task<byte[]> WriteResponseAsync(this HttpResponseMessage response)
+        public static Task<byte[]> WriteResponseAsync(this HttpResponseMessage response)
+        {
+            return WriteResponseAsync(response, CancellationToken.None);
+        }
+
+        public static async Task<byte[]> WriteResponseAsync(this HttpResponseMessage response, CancellationToken cancellationToken)
         {
             if (response == null) throw new ArgumentNullException("response");
             var memStream = new MemoryStream();
-            await WriteResponseAsync(response, memStream);
+            await WriteResponseAsync(response, memStream, cancellationToken);
             var arr = memStream.ToArray();
             return arr;
         }
 
 
-        public static async Task<HttpRequestMessage> ReadRequestAsync(Stream stream)
+        public static Task<HttpRequestMessage> ReadRequestAsync(Stream stream)
+        {
+            return ReadRequestAsync(stream, CancellationToken.None);
+        }
+
+        public static async Task<HttpRequestMessage> ReadRequestAsync(Stream stream, CancellationToken cancellationToken)
         {
             if (stream == null) throw new ArgumentNullException("stream");
             var handler = new HttpRequestParserDelegate();
@@ -87,6 +113,7 @@ namespace SharpBizz.Http
 
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 readCount = await stream.ReadAsync(buffer, 0, bufferSize);
                 if (readCount <= 0)
                     break;
@@ -104,13 +131,24 @@ namespace SharpBizz.Http
 
             return handler.Request;
         }
+
         public static Task<HttpRequestMessage> ReadRequestAsync(byte[] data)
         {
-            if (data == null) throw new ArgumentNullException("data");
-            return ReadRequestAsync(new MemoryStream(data));
+            return ReadRequestAsync(data, CancellationToken.None);
         }
 
-        public static async Task<HttpResponseMessage> ReadResponseAsync(Stream stream)
+        public static Task<HttpRequestMessage> ReadRequestAsync(byte[] data, CancellationToken cancellationToken)
+        {
+            if (data == null) throw new ArgumentNullException("data");
+            return ReadRequestAsync(new MemoryStream(data), cancellationToken);
+        }
+
+        public static Task<HttpResponseMessage> ReadResponseAsync(Stream stream)
+        {
+            return ReadResponseAsync(stream, CancellationToken.None);
+        }
+
+        public static async Task<HttpResponseMessage> ReadResponseAsync(Stream stream, CancellationToken cancellationToken)
         {
             if (stream == null) throw new ArgumentNullException("stream");
             var handler = new HttpResponseParserDelegate();
@@ -122,6 +160,7 @@ namespace SharpBizz.Http
 
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 readCount = await stream.ReadAsync(buffer, 0, bufferSize);
                 if (readCount <= 0)
                     break;
@@ -139,10 +178,16 @@ namespace SharpBizz.Http
 
             return handler.Response;
         }
+
         public static Task<HttpResponseMessage> ReadResponseAsync(byte[] data)
         {
+            return ReadResponseAsync(data, CancellationToken.None);
+        }
+
+        public static Task<HttpResponseMessage> ReadResponseAsync(byte[] data, CancellationToken cancellationToken)
+        {
             if (data == null) throw new ArgumentNullException("data");
-            return ReadResponseAsync(new MemoryStream(data));
+            return ReadResponseAsync(new MemoryStream(data), cancellationToken);
         }
 
         public static DateTimeOffset? ParseHttpDate(string httpDate)
@@ -167,14 +212,14 @@ namespace SharpBizz.Http
             return sb.ToString();
         }
 
-        private static async Task WriteAsciiAsync(Stream stream, string text)
+        private static async Task WriteAsciiAsync(Stream stream, string text, CancellationToken cancellationToken)
         {
             // This can be optimized
             var buffer = Ascii.GetBytes(text);
-            await stream.WriteAsync(buffer, 0, buffer.Length);
+            await stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
         }
 
-        private static async Task WriteHeadersAsync(Stream stream, HttpHeaders messageHeaders, HttpContent content)
+        private static async Task WriteHeadersAsync(Stream stream, HttpHeaders messageHeaders, HttpContent content, CancellationToken cancellationToken)
         {
             var headers = messageHeaders.AsEnumerable();
             if (content != null)
@@ -183,15 +228,16 @@ namespace SharpBizz.Http
             foreach (var header in headers.OrderBy(h => h.Key))
             {
                 await WriteAsciiAsync(stream, string.Format(@"{0}: {1}
-", header.Key, GetHeaderValue(header.Key, header.Value)));
+", header.Key, GetHeaderValue(header.Key, header.Value)), cancellationToken);
             }
 
             await WriteAsciiAsync(stream, @"
-");
+", cancellationToken);
         }
 
-        private static async Task WriteContentAsync(Stream stream, HttpContent content)
+        private static async Task WriteContentAsync(Stream stream, HttpContent content, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (content != null)
             {
                 await content.CopyToAsync(stream);

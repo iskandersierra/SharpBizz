@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{393FFCF7-B46C-4981-A766-76FA152BAD49}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Identity.Abstractions</RootNamespace>
+    <AssemblyName>Identity.Abstractions</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Commands\AddScopeClaim.cs" />
+    <Compile Include="Commands\ChangeScopeName.cs" />
+    <Compile Include="Commands\InvalidateScopeName.cs" />
+    <Compile Include="Commands\SetScopeClaimInclusionInIdToken.cs" />
+    <Compile Include="Commands\CreateResourceScope.cs" />
+    <Compile Include="Commands\CreateIdentityScope.cs" />
+    <Compile Include="Commands\DeEmphasizeScope.cs" />
+    <Compile Include="Commands\DisableScope.cs" />
+    <Compile Include="Commands\EmphasizeScope.cs" />
+    <Compile Include="Commands\EnableScope.cs" />
+    <Compile Include="Commands\HideScopeInDiscoveryDocument.cs" />
+    <Compile Include="Commands\IncludeAllScopeClaimsForUser.cs" />
+    <Compile Include="Commands\RemoveScopeClaim.cs" />
+    <Compile Include="Commands\SetScopeClaimDescription.cs" />
+    <Compile Include="Commands\SetScopeClaimsRule.cs" />
+    <Compile Include="Commands\SetScopeDescription.cs" />
+    <Compile Include="Commands\SetScopeDisplayName.cs" />
+    <Compile Include="Commands\SetScopeOptional.cs" />
+    <Compile Include="Commands\SetScopeRequired.cs" />
+    <Compile Include="Commands\ShowScopeInDiscoveryDocument.cs" />
+    <Compile Include="Commands\ValidateScopeName.cs" />
+    <Compile Include="Events\AllScopeClaimsIncludedForUser.cs" />
+    <Compile Include="Events\IdentityScopeCreated.cs" />
+    <Compile Include="Events\ResourceScopeCreated.cs" />
+    <Compile Include="Events\ScopeClaimAdded.cs" />
+    <Compile Include="Events\ScopeClaimDescriptionSet.cs" />
+    <Compile Include="Events\ScopeClaimInclusionInIdTokenSet.cs" />
+    <Compile Include="Events\ScopeClaimRemoved.cs" />
+    <Compile Include="Events\ScopeClaimsRuleSet.cs" />
+    <Compile Include="Events\ScopeDeEmphasized.cs" />
+    <Compile Include="Events\ScopeDescriptionSet.cs" />
+    <Compile Include="Events\ScopeDisabled.cs" />
+    <Compile Include="Events\ScopeDisplayNameSet.cs" />
+    <Compile Include="Events\ScopeEmphasized.cs" />
+    <Compile Include="Events\ScopeEnabled.cs" />
+    <Compile Include="Events\ScopeHiddenInDiscoveryDocument.cs" />
+    <Compile Include="Events\ScopeNameChanged.cs" />
+    <Compile Include="Events\ScopeNameInvalidated.cs" />
+    <Compile Include="Events\ScopeNameValidated.cs" />
+    <Compile Include="Events\ScopeSetAsOptional.cs" />
+    <Compile Include="Events\ScopeSetAsRequired.cs" />
+    <Compile Include="Events\ScopeShownInDiscoveryDocument.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="States\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\framework\SharpBizz.Domain\SharpBizz.Domain.csproj">
+      <Project>{FFE7050D-12D1-4A59-BE27-5156FD229EC3}</Project>
+      <Name>SharpBizz.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

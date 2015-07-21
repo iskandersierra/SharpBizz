@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{73DB2F88-A202-49BC-AF9D-A47B7B969CC3}</ProjectGuid>
+    <ProjectGuid>{A47A276B-2362-420D-B3BE-004845701AB8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SharpBizz.Http</RootNamespace>
-    <AssemblyName>SharpBizz.Http</AssemblyName>
+    <RootNamespace>SharpBizz.Http.Messaging</RootNamespace>
+    <AssemblyName>SharpBizz.Http.Messaging</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,12 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HttpMachine">
-      <HintPath>..\..\..\lib\HttpMachine\HttpMachine.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,12 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncHttp\HttpMessageSenderHandler.cs" />
-    <Compile Include="AsyncHttp\IMessageSender.cs" />
-    <Compile Include="HttpMessageSerializer.cs" />
-    <Compile Include="HttpUtils.cs" />
-    <Compile Include="IHttpMessageSerializer.cs" />
+    <Compile Include="MessageQueueSender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SharpBizz.Http\SharpBizz.Http.csproj">
+      <Project>{73DB2F88-A202-49BC-AF9D-A47B7B969CC3}</Project>
+      <Name>SharpBizz.Http</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

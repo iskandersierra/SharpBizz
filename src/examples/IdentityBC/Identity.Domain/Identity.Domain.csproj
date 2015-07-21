@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{73DB2F88-A202-49BC-AF9D-A47B7B969CC3}</ProjectGuid>
+    <ProjectGuid>{AC011118-1A75-45E8-AE82-5CB86ADF86AD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SharpBizz.Http</RootNamespace>
-    <AssemblyName>SharpBizz.Http</AssemblyName>
+    <RootNamespace>Identity.Domain</RootNamespace>
+    <AssemblyName>Identity.Domain</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,12 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HttpMachine">
-      <HintPath>..\..\..\lib\HttpMachine\HttpMachine.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,12 +39,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncHttp\HttpMessageSenderHandler.cs" />
-    <Compile Include="AsyncHttp\IMessageSender.cs" />
-    <Compile Include="HttpMessageSerializer.cs" />
-    <Compile Include="HttpUtils.cs" />
-    <Compile Include="IHttpMessageSerializer.cs" />
+    <Compile Include="CreateIdentityScopeProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\framework\SharpBizz.Domain\SharpBizz.Domain.csproj">
+      <Project>{FFE7050D-12D1-4A59-BE27-5156FD229EC3}</Project>
+      <Name>SharpBizz.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Identity.Abstractions\Identity.Abstractions.csproj">
+      <Project>{393FFCF7-B46C-4981-A766-76FA152BAD49}</Project>
+      <Name>Identity.Abstractions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
